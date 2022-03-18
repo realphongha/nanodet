@@ -31,7 +31,7 @@ def generate_ouput_names(head_cfg):
     return cls_names + dis_names
 
 
-def main(config, model_path, output_path, input_shape=(320, 320)):
+def main(config, model_path, output_path, input_shape=(320, 320), opset=11):
     logger = Logger(-1, config.save_dir, False)
     model = build_model(config.model)
     checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
@@ -53,7 +53,7 @@ def main(config, model_path, output_path, input_shape=(320, 320)):
         output_path,
         verbose=True,
         keep_initializers_as_inputs=True,
-        opset_version=11,
+        opset_version=opset,
         input_names=["data"],
         output_names=["output"],
     )
@@ -84,6 +84,9 @@ def parse_args():
     parser.add_argument(
         "--input_shape", type=str, default=None, help="Model intput shape."
     )
+    parser.add_argument(
+        "--opset", type=int, default=11, help="Opset version."
+    )
     return parser.parse_args()
 
 
@@ -101,5 +104,5 @@ if __name__ == "__main__":
         assert len(input_shape) == 2
     if model_path is None:
         model_path = os.path.join(cfg.save_dir, "model_best/model_best.ckpt")
-    main(cfg, model_path, out_path, input_shape)
+    main(cfg, model_path, out_path, input_shape, args.opset)
     print("Model saved to:", out_path)
