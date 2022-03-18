@@ -4,8 +4,6 @@ import time
 import math
 
 import cv2
-from scipy.fft import dst
-import torch
 import numpy as np
 
 
