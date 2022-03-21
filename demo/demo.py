@@ -67,8 +67,9 @@ class Predictor(object):
         meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1)).to(self.device)
         meta = naive_collate([meta])
         meta["img"] = stack_batch_img(meta["img"], divisible=32)
+
         with torch.no_grad():
-            results = self.model.inference(meta)
+            results = self.model.inference(meta, cpu=True)
         return meta, results
 
     def visualize(self, dets, meta, class_names, score_thres, wait=0):
@@ -99,7 +100,8 @@ def main():
 
     load_config(cfg, args.config)
     logger = Logger(local_rank, use_tensorboard=False)
-    predictor = Predictor(cfg, args.model, logger, device="cuda:0")
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    predictor = Predictor(cfg, args.model, logger, device=device)
     logger.log('Press "Esc", "q" or "Q" to exit.')
     current_time = time.localtime()
     if args.demo == "image":

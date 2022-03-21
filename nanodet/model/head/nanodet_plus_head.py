@@ -371,6 +371,7 @@ class NanoDetPlusHead(nn.Module):
         cls_scores, bbox_preds = preds.split(
             [self.num_classes, 4 * (self.reg_max + 1)], dim=-1
         )
+        # print(cls_scores.shape, bbox_preds.shape);quit()
         result_list = self.get_bboxes(cls_scores, bbox_preds, meta)
         det_results = {}
         warp_matrixes = (
@@ -468,8 +469,8 @@ class NanoDetPlusHead(nn.Module):
             results = multiclass_nms(
                 bbox,
                 score,
-                score_thr=0.05,
-                nms_cfg=dict(type="nms", iou_threshold=0.6),
+                score_thr=0.05, # 0.05
+                nms_cfg=dict(type="nms", iou_threshold=0.6), # 0.6
                 max_num=100,
             )
             result_list.append(results)

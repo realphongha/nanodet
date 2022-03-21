@@ -45,16 +45,19 @@ class OneStageDetector(nn.Module):
             x = self.head(x)
         return x
 
-    def inference(self, meta):
+    def inference(self, meta, cpu=False):
         with torch.no_grad():
-            torch.cuda.synchronize()
+            if not cpu:
+                torch.cuda.synchronize()
             time1 = time.time()
             preds = self(meta["img"])
-            torch.cuda.synchronize()
+            if not cpu:
+                torch.cuda.synchronize()
             time2 = time.time()
             print("forward time: {:.3f}s".format((time2 - time1)), end=" | ")
             results = self.head.post_process(preds, meta)
-            torch.cuda.synchronize()
+            if not cpu:
+                torch.cuda.synchronize()
             print("decode time: {:.3f}s".format((time.time() - time2)), end=" | ")
         return results
 
