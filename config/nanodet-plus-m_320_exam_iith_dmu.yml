@@ -6,8 +6,8 @@ class_names:
 - cell phone
 data:
   train:
-    ann_path: /mnt/hdd3tb/Users/phonghh/data/COCO2017/annotations/instances_train2017_exam.json
-    img_path: /mnt/hdd3tb/Users/phonghh/data/COCO2017/images/train2017
+    ann_path: /mnt/hdd3tb/Users/phonghh/data/COCO2017/annotations/instances_train2017_exam_iith_dmu.json
+    img_path: /mnt/hdd3tb/Users/phonghh/data/COCO2017/coco_exam_merge_IITH_DMU/images/train2017
     input_size:
     - 320
     - 320
@@ -42,8 +42,10 @@ data:
         - 1.2
       translate: 0.2
   val:
+    # ann_path: /mnt/hdd3tb/Users/phonghh/data/COCO2017/annotations/instances_val2017_exam_iith_dmu.json
     ann_path: /mnt/hdd3tb/Users/phonghh/data/COCO2017/annotations/instances_val2017_exam.json
-    img_path: /mnt/hdd3tb/Users/phonghh/data/COCO2017/images/val2017
+    # img_path: /mnt/hdd3tb/Users/phonghh/data/COCO2017/coco_exam_merge_IITH_DMU/images/val2017
+    img_path: /mnt/hdd3tb/Users/phonghh/data/COCO2017/coco_exam/images/val2017
     input_size:
     - 320
     - 320
@@ -61,7 +63,7 @@ device:
   batchsize_per_gpu: 64
   gpu_ids:
   - 0
-  workers_per_gpu: 4
+  workers_per_gpu: 2
 evaluator:
   name: CocoDetectionEvaluator
   save_key: mAP
@@ -135,17 +137,18 @@ model:
   weight_averager:
     decay: 0.9998
     name: ExpMovingAverager
-save_dir: workspace/nanodet-plus-m_320
+save_dir: workspace/nanodet-plus-m_320_exam_iith_dmu
 schedule:
+  load_model: weights/pretrained/nanodet-plus-m_320_checkpoint.ckpt
   lr_schedule:
     T_max: 300
     eta_min: 5.0e-05
     name: CosineAnnealingLR
   optimizer:
-    lr: 0.0006
+    lr: 0.0005
     name: AdamW
     weight_decay: 0.05
-  total_epochs: 200
+  total_epochs: 100
   val_intervals: 10
   warmup:
     name: linear
