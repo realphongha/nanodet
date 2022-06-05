@@ -165,8 +165,35 @@ class NanoDetOnnx(NanoDetAbs):
         output = self.ort_session.run(None, {self.input_name: model_input})
         print("Latency: %.2f(ms)" % (time.time()-begin))
         output = output[0][0]
-        # print(output.shape);quit()
         bboxes = self._postprocess(output)
         return bboxes
 
-    
+class NanoDetMnn(NanoDetAbs):
+    import MNN
+
+    def __init__(self, model_path, device, input_shape, std, mean, num_cls, 
+                 reg_max, strides, score_thres, iou_thres):
+        super().__init__(model_path, device, input_shape, std, mean, num_cls, 
+                         reg_max, strides, score_thres, iou_thres)
+        
+        self.interpreter = self.MNN.Interpreter(model_path)
+        self.session = self.interpreter.createSession()
+        self.input_tensor = self.interpreter.getSessionInput(self.session)
+       
+    def infer(self, img):
+        model_input = self._preprocess(img)
+        model_input = model_input[None]
+        begin = time.time()
+        tmp_input = self.MNN.Tensor(model_input.shape, 
+            self.MNN.Halide_Type_Float, 
+            model_input, 
+            self.MNN.Tensor_DimensionType_Caffe)
+        self.input_tensor.copyFrom(tmp_input)
+        self.interpreter.runSession(self.session)
+        output = self.interpreter.getSessionOutput(self.session).getNumpyData()
+        print("Latency: %.2f(ms)" % (time.time()-begin))
+        output = output[0]
+        # print(output)
+        # print(output.shape)
+        bboxes = self._postprocess(output)
+        return bboxes

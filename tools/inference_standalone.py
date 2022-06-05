@@ -1,9 +1,7 @@
 import os
 import cv2
 import numpy as np
-
-from .standalone_engine import NanoDetOnnx
-
+from .standalone_engine import NanoDetMnn, NanoDetOnnx
 
 
 if __name__ == "__main__":
@@ -57,7 +55,7 @@ if __name__ == "__main__":
                         help='device')
     parser.add_argument('--test-speed', 
                         type=int, 
-                        default=100, 
+                        default=None, 
                         help='run n times to test speed')
     opt = parser.parse_args()
     if len(opt.imgsz) == 1:
@@ -65,16 +63,25 @@ if __name__ == "__main__":
     opt.imgsz = tuple(opt.imgsz)
     assert opt.num_cls == len(opt.score_thres)
     
-    if opt.engine == "onnx":
-        engine = NanoDetOnnx(opt.weights, opt.device, opt.imgssz, 
+    if opt.engine.lower() == "onnx":
+        engine = NanoDetOnnx(opt.weights, opt.device, opt.imgsz, 
                              opt.std, opt.mean,
                              opt.num_cls, opt.reg_max, opt.strides,
                              opt.score_thres, opt.iou_thres)
+    elif opt.engine.lower() == "mnn":
+        engine = NanoDetMnn(opt.weights, opt.device, opt.imgsz, 
+                            opt.std, opt.mean,
+                            opt.num_cls, opt.reg_max, opt.strides,
+                            opt.score_thres, opt.iou_thres)
     else:
         raise NotImplementedError("%s is not implemented!" % opt.engine)
     img = cv2.imread(opt.img)
     h, w = img.shape[:2]
-    bboxes = engine.infer(img.copy())
+    if opt.test_speed:
+        for _ in range(opt.test_speed):
+            bboxes = engine.infer(img.copy())
+    else:
+        bboxes = engine.infer(img.copy())
     for bbox in bboxes:
         # print(bbox)
         xmin, ymin, xmax, ymax, score, cls = bbox
